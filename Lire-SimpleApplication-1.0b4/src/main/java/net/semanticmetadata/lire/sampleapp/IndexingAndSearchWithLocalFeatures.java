@@ -72,7 +72,7 @@ public class IndexingAndSearchWithLocalFeatures {
         // indexing all images in "testdata"
         index("index", "testdata");
         // searching through the images.
-        search("index", "/home/dburrell/InformationRetrieval/Assignment 2/Lire-SimpleApplication-1.0b4/searchImages/bovista_plumbea0.jpg");
+        search("index", "/home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/searchImages/bovista_plumbea0.jpg");
     }
 
     /**
@@ -120,10 +120,12 @@ public class IndexingAndSearchWithLocalFeatures {
             }
         });
 
+        //Custom
+        indexer.addExtractor(ColorHistogram.class, SimpleExtractor.KeypointDetector.CVSURF);
         //Local
-        indexer.addExtractor(CvSurfExtractor.class);
+        //indexer.addExtractor(CvSurfExtractor.class);
         //Simple
-        indexer.addExtractor(CEDD.class, SimpleExtractor.KeypointDetector.CVSURF);
+        //indexer.addExtractor(CEDD.class, SimpleExtractor.KeypointDetector.CVSURF);
 
         indexer.run();
         System.out.println("Finished indexing.");

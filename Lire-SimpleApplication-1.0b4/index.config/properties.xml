@@ -2,15 +2,12 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>AllExtractors</comment>
-<entry key="2.extractor">net.semanticmetadata.lire.imageanalysis.features.global.CEDD</entry>
 <entry key="0.info.2">128</entry>
-<entry key="2.codebook.1">SIMPLEdetCVSURFCEDD128</entry>
+<entry key="1">simple</entry>
 <entry key="0.info.1">net.semanticmetadata.lire.aggregators.BOVW</entry>
 <entry key="0.info.0">null</entry>
-<entry key="1.extractor">net.semanticmetadata.lire.imageanalysis.features.local.opencvfeatures.CvSurfExtractor</entry>
-<entry key="1.codebook.1">CvSURF128</entry>
-<entry key="2">simple</entry>
-<entry key="1">local</entry>
 <entry key="0">info</entry>
-<entry key="2.detector">detCVSURF</entry>
+<entry key="1.detector">detCVSURF</entry>
+<entry key="1.codebook.1">SIMPLEdetCVSURFCEDD128</entry>
+<entry key="1.extractor">net.semanticmetadata.lire.sampleapp.ColorHistogram</entry>
 </properties>
