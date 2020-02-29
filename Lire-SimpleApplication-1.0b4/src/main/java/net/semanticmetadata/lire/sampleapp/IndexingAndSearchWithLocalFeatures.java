@@ -43,6 +43,7 @@ import net.semanticmetadata.lire.aggregators.AbstractAggregator;
 import net.semanticmetadata.lire.aggregators.BOVW;
 import net.semanticmetadata.lire.builders.DocumentBuilder;
 import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
+import net.semanticmetadata.lire.imageanalysis.features.global.SimpleColorHistogram;
 import net.semanticmetadata.lire.imageanalysis.features.local.opencvfeatures.CvSurfExtractor;
 import net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor;
 import net.semanticmetadata.lire.indexers.parallel.ImagePreprocessor;
@@ -51,7 +52,6 @@ import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
 import net.semanticmetadata.lire.searchers.ImageSearchHits;
 import net.semanticmetadata.lire.searchers.ImageSearcher;
 import net.semanticmetadata.lire.utils.ImageUtils;
-import nu.pattern.OpenCV;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
@@ -72,7 +72,7 @@ public class IndexingAndSearchWithLocalFeatures {
         // indexing all images in "testdata"
         index("index", "testdata");
         // searching through the images.
-        search("index", "/home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/searchImages/bovista_plumbea0.jpg");
+        search("index", "/home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/searchImages");
     }
 
     /**
@@ -80,23 +80,36 @@ public class IndexingAndSearchWithLocalFeatures {
      * @param indexPath
      * @throws IOException
      */
-    public static void search(String indexPath, String searchImagePath) throws IOException {
+    public static void search(String indexPath, String searchImageFolder) throws IOException {
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 
         // make sure that this matches what you used for indexing (see below) ...
-        ImageSearcher imgSearcher = new GenericFastImageSearcher(1000, CEDD.class, SimpleExtractor.KeypointDetector.CVSURF, new BOVW(), 128, true, reader, indexPath + ".config");
-        // just a static example with a given image.
-        ImageSearchHits hits = imgSearcher.search(ImageIO.read(new File(searchImagePath)), reader);
+        ImageSearcher imgSearcher = new GenericFastImageSearcher(1000,
+                hsvHistogramExtractor_gloabl.class,
+                SimpleExtractor.KeypointDetector.CVSURF,
+                new BOVW(),
+                128, true, reader, indexPath + ".config");
 
+        // loop images in search folder
+        File[] dirFiles = new File(searchImageFolder).listFiles();
 
-        for (int i=0; i<hits.length(); i++) {
-            System.out.printf("%.2f: (%d) %s\n", hits.score(i), hits.documentID(i),
-                    reader.document(hits.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0]);
+        if(dirFiles.length != 0)
+        {
+            for(File searchIm : dirFiles)
+            {
+                ImageSearchHits hits = imgSearcher.search(ImageIO.read(searchIm), reader);
+
+                for (int i=0; i<hits.length(); i++) {
+                    System.out.printf("%.2f: (%d) %s\n", hits.score(i), hits.documentID(i),
+                            reader.document(hits.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0]);
+                }
+
+            }
         }
-
-
-
-
+        else
+        {
+            System.out.printf("No files found in the search directory %s", searchImageFolder);
+        }
     }
 
     /**
@@ -121,7 +134,7 @@ public class IndexingAndSearchWithLocalFeatures {
         });
 
         //Custom
-        indexer.addExtractor(ColorHistogram.class, SimpleExtractor.KeypointDetector.CVSURF);
+        indexer.addExtractor(hsvHistogramExtractor_gloabl.class, SimpleExtractor.KeypointDetector.CVSURF);
         //Local
         //indexer.addExtractor(CvSurfExtractor.class);
         //Simple
