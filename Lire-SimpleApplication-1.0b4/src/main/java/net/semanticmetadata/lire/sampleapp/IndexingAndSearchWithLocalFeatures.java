@@ -42,9 +42,6 @@ package net.semanticmetadata.lire.sampleapp;
 import net.semanticmetadata.lire.aggregators.AbstractAggregator;
 import net.semanticmetadata.lire.aggregators.BOVW;
 import net.semanticmetadata.lire.builders.DocumentBuilder;
-import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
-import net.semanticmetadata.lire.imageanalysis.features.global.SimpleColorHistogram;
-import net.semanticmetadata.lire.imageanalysis.features.local.opencvfeatures.CvSurfExtractor;
 import net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor;
 import net.semanticmetadata.lire.indexers.parallel.ImagePreprocessor;
 import net.semanticmetadata.lire.indexers.parallel.ParallelIndexer;
@@ -52,6 +49,7 @@ import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
 import net.semanticmetadata.lire.searchers.ImageSearchHits;
 import net.semanticmetadata.lire.searchers.ImageSearcher;
 import net.semanticmetadata.lire.utils.ImageUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
@@ -60,7 +58,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * Simple class showing the process of indexing and searching for local & SIMPLE descriptors.
@@ -68,11 +71,95 @@ import java.nio.file.Paths;
  * @author Mathias Lux, mathias@juggle.at
  */
 public class IndexingAndSearchWithLocalFeatures {
+
+
     public static void main(String[] args) throws IOException {
-        // indexing all images in "testdata"
-        index("index", "testdata");
-        // searching through the images.
-        search("index", "/home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/searchImages");
+
+        //number of images to search for
+        int numberOfRuns = 5;
+        //date form to be appended to result file name
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+
+        //loop for the number of runs
+        for(int r = 0; r < numberOfRuns; r++) {
+
+            //run set file method and get the name of the file being used for searching
+            String searchFileName =  setUpImages();
+
+            // indexing all images in "testdata"
+           index("index", "data/testImages");
+            // searching through the images.
+            String results = search("index", "data/searchImages");
+
+            //rest image files to the original folder
+            resetImageFiles();
+
+            //write search results to file
+            PrintWriter pWriter = new PrintWriter("data/searchResults/"+searchFileName+"_"+
+                    dateFormatter.format(new Date())+".txt",
+                    "UTF-8");
+            pWriter.println(results);
+            pWriter.close();
+        }
+
+        System.out.println("Finished everything :)");
+    }
+
+    /**
+     * sets up images for processing by selecting one test image at random tom be used as the search image (not included in indexing)
+     * @return
+     * @throws IOException
+     */
+    private static String setUpImages() throws IOException {
+
+        Random rand = new Random();
+
+        //get list of files being used
+        File[] dirFiles = new File("data/testImages").listFiles();
+
+        //randomly select one image from the test images
+        int n = rand.nextInt(dirFiles.length);
+        File searchImg = dirFiles[n];
+
+        //copy the test image to the search image folder
+        copyFile(searchImg, "data/searchImages");
+        System.out.printf("Chosen search file: %s", searchImg.getName());
+        System.out.println();
+
+        //remove the search image from the images to be used for indexing
+        Files.delete(searchImg.toPath());
+
+        //return the name of the file being used for searching
+        return FilenameUtils.removeExtension(searchImg.getName());
+    }
+
+    /**
+     * returns the image being used for searching to the test image folder
+     * @throws IOException
+     */
+    private static void resetImageFiles() throws IOException{
+
+        //get the list of files in the search image folder
+        File[] dirFiles = new File("data/searchImages").listFiles();
+
+        //for each file in the folder move back to the test image folder and remove from the search image folder
+        for(File f : dirFiles){
+            copyFile(f, "data/testImages");
+            Files.delete(f.toPath());
+        }
+    }
+
+    /**
+     * copy a file to a new folder
+     * @param fileToMove the file to be moved
+     * @param destFolder the folder path for the folder to be moved
+     * @throws IOException
+     */
+    private static void copyFile(File fileToMove, String destFolder) throws IOException{
+        //create a new File object to copy the file to
+        File destFile = new File(destFolder, fileToMove.getName());
+        //copy the file
+        Files.copy(fileToMove.toPath(), destFile.toPath());
     }
 
     /**
@@ -80,11 +167,14 @@ public class IndexingAndSearchWithLocalFeatures {
      * @param indexPath
      * @throws IOException
      */
-    public static void search(String indexPath, String searchImageFolder) throws IOException {
+    public static String search(String indexPath, String searchImageFolder) throws IOException {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
 
         // make sure that this matches what you used for indexing (see below) ...
-        ImageSearcher imgSearcher = new GenericFastImageSearcher(1000,
+        ImageSearcher imgSearcher = new GenericFastImageSearcher(10,
                 hsvHistogramExtractor_gloabl.class,
                 SimpleExtractor.KeypointDetector.CVSURF,
                 new BOVW(),
@@ -93,6 +183,8 @@ public class IndexingAndSearchWithLocalFeatures {
         // loop images in search folder
         File[] dirFiles = new File(searchImageFolder).listFiles();
 
+        System.out.println("Performing search....");
+
         if(dirFiles.length != 0)
         {
             for(File searchIm : dirFiles)
@@ -100,8 +192,11 @@ public class IndexingAndSearchWithLocalFeatures {
                 ImageSearchHits hits = imgSearcher.search(ImageIO.read(searchIm), reader);
 
                 for (int i=0; i<hits.length(); i++) {
-                    System.out.printf("%.2f: (%d) %s\n", hits.score(i), hits.documentID(i),
+
+                    String res = String.format("%d: %.2f  %s\n", hits.documentID(i),hits.score(i),
                             reader.document(hits.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0]);
+
+                    stringBuilder.append(res);
                 }
 
             }
@@ -110,6 +205,10 @@ public class IndexingAndSearchWithLocalFeatures {
         {
             System.out.printf("No files found in the search directory %s", searchImageFolder);
         }
+
+        System.out.println("Finished searching");
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -135,10 +234,6 @@ public class IndexingAndSearchWithLocalFeatures {
 
         //Custom
         indexer.addExtractor(hsvHistogramExtractor_gloabl.class, SimpleExtractor.KeypointDetector.CVSURF);
-        //Local
-        //indexer.addExtractor(CvSurfExtractor.class);
-        //Simple
-        //indexer.addExtractor(CEDD.class, SimpleExtractor.KeypointDetector.CVSURF);
 
         indexer.run();
         System.out.println("Finished indexing.");

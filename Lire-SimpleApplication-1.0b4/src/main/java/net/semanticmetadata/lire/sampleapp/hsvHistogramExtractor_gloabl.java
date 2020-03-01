@@ -19,13 +19,13 @@ public class hsvHistogramExtractor_gloabl implements GlobalFeature {
     private int[] rgbPixel = new int[3];
 
     //int array to store the hsv feature histogram for the image
-    private int[] featureHistogram;
+    private double[] featureHistogram;
 
     //Hyper parameter to store the number of bins for the histogram
-    private final int  NUM_BINS = 1000;
+    private final int  NUM_BINS = 512;
 
     public hsvHistogramExtractor_gloabl() {
-        this.featureHistogram = new int[NUM_BINS];
+        this.featureHistogram = new double[NUM_BINS];
     }
 
     public void extract(BufferedImage image) {
@@ -48,7 +48,7 @@ public class hsvHistogramExtractor_gloabl implements GlobalFeature {
         }
 
         //normalize histogram
-        int maxValue = 0;
+        double maxValue = 0;
 
         for(int i = 0; i < featureHistogram.length; ++i) {
             maxValue = Math.max(featureHistogram[i], maxValue);
@@ -64,15 +64,15 @@ public class hsvHistogramExtractor_gloabl implements GlobalFeature {
     }
 
     public void setByteArrayRepresentation(byte[] in) {
-        this.featureHistogram = SerializationUtils.toIntArray(in);
+        this.featureHistogram = SerializationUtils.toDoubleArray(in);
     }
 
     public void setByteArrayRepresentation(byte[] in, int offset, int length) {
-        this.featureHistogram = SerializationUtils.toIntArray(in, offset, length);
+        this.featureHistogram = SerializationUtils.toDoubleArray(in, offset, length);
     }
 
     public double[] getFeatureVector() {
-        return ConversionUtils.toDouble(this.featureHistogram);
+        return featureHistogram;
     }
 
     private int getBin(int[] pixel) {
@@ -93,7 +93,6 @@ public class hsvHistogramExtractor_gloabl implements GlobalFeature {
         }
 
         return qH * 16 + qV * 4 + qS;
-
     }
 
     public double getDistance(LireFeature vd) {
@@ -112,21 +111,16 @@ public class hsvHistogramExtractor_gloabl implements GlobalFeature {
 
             return Math.sqrt(diff_square_sum);
 
+             //Earth Movers Distance
+//             return  new EarthMoversDistance().compute(this.featureHistogram,
+//                   searchImageFeatures.featureHistogram);
 
-//           return  new EarthMoversDistance().compute(intArrayToDouble(this.featureHistogram),
-//                   intArrayToDouble(searchImageFeatures.featureHistogram));
+            //Chi-Squared
+//           return MetricsUtils.chisquare(this.featureHistogram,
+//                   searchImageFeatures.featureHistogram);
+
 
         }
-    }
-
-    private double[] intArrayToDouble(int[] ia){
-        double[] di = new double[ia.length];
-
-        for(int i = 0; i < ia.length; i++){
-            di[i] = ia[i];
-        }
-
-        return di;
     }
 
 
