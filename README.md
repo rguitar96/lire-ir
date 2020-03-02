@@ -20,3 +20,5 @@ To view the code for each section click the following links:
 ## How to run
 
 To run the application open in Intellij and go to build.gradle runIndexLocalSLocalFeat task definition and define where binaries of your OS. Then go to java src/java folder and right click on IndexingAndSearchWithLocalFeatures to execute its main method.
+
+**Note:** Each time the application is run the “data/searchResults” folder is emptied. 
