@@ -13,6 +13,10 @@ import net.semanticmetadata.lire.utils.ConversionUtils;
 import net.semanticmetadata.lire.utils.ImageUtils;
 import net.semanticmetadata.lire.utils.SerializationUtils;
 
+/**
+ * GloablFeature that extracts a RGB feature histogram of an image to use for indexing and uses
+ * euclidean distance to determine how close two image histograms are
+ */
 public class ColorHistogramExtractor_gloabl implements GlobalFeature {
     private int[] rgbPixel = new int[3];
     private int[] featureHistogram;

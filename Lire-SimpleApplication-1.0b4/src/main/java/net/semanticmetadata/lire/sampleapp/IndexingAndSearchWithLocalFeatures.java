@@ -78,13 +78,28 @@ public class IndexingAndSearchWithLocalFeatures {
     //date form to be appended to result file name
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
 
+    //path to folder holding test images
+    private static String testImagePath = "data/testImages";
+    //path to search image folder
+    private static String searchImagePath = "data/searchImages";
+    //path to search results folder
+    private static String searchResultsPath = "data/searchResults/";
+
     public static void main(String[] args) throws IOException {
 
-        //remove old search results
-        FileUtils.cleanDirectory(new File("data/searchResults"));
+
+        File dir = new File(searchImagePath);
+
+        if(!dir.exists()){
+            dir.mkdir();
+        }
+        else{
+            //remove old search results
+            FileUtils.cleanDirectory(new File(searchImagePath));
+        }
 
         //get list of files being used
-        File[] dirFiles = new File("data/testImages").listFiles();
+        File[] dirFiles = new File(testImagePath).listFiles();
 
         //for each file being used in test
         for (File searchImg : dirFiles) {
@@ -93,15 +108,15 @@ public class IndexingAndSearchWithLocalFeatures {
             setUpImage(searchImg);
 
             // indexing all images in "testdata"
-            index("index", "data/testImages");
+            index("index", testImagePath);
             // searching through the images.
-            String results = search("index", "data/searchImages");
+            String results = search("index", searchImagePath);
 
             //rest image files to the original folder
             resetImageFiles();
 
             //write search results to file
-            PrintWriter pWriter = new PrintWriter("data/searchResults/" + searchImg.getName() + "_" +
+            PrintWriter pWriter = new PrintWriter( searchResultsPath+ searchImg.getName() + "_" +
                     dateFormatter.format(new Date()) + ".txt",
                     "UTF-8");
             pWriter.println(results);
