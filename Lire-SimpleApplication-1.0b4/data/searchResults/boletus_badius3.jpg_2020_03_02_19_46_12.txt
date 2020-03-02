@@ -1,0 +1,11 @@
+10: 533.27  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/cantharellus_cibarius1.jpg
+17: 533.28  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/boletus_badius2.jpg
+0: 626.59  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/agaricus_arvensis0.jpg
+5: 629.23  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/cortinarius_collinitus2.jpg
+24: 634.79  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/gomphidius_glutinosus1.jpg
+4: 645.13  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/amanita_pantherina0.jpg
+22: 678.08  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/cantharellus_cibarius3.jpg
+2: 681.49  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/amanita_pantherina1.jpg
+15: 690.42  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/agaricus_arvensis1.jpg
+20: 695.08  /home/dburrell/InformationRetrieval/Assignment 2/lire-ir/Lire-SimpleApplication-1.0b4/data/testImages/boletus_pinophilus4.jpg
+

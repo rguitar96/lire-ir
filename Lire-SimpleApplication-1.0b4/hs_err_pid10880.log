@@ -110,7 +110,7 @@ C  [libjdwp.so+0x17ce8]
 V  [libjvm.so+0x751a2b]
 V  [libjvm.so+0x751de4]
 V  [libjvm.so+0x6797fc]
-j  net.semanticmetadata.lire.sampleapp.hsvHistogramExtractor_gloabl.extract(Ljava/awt/image/BufferedImage;)V+234
+j  net.semanticmetadata.lire.sampleapp.ColorHistogramExtractor_gloabl.extract(Ljava/awt/image/BufferedImage;)V+234
 j  net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor.useCVSURF(Ljava/awt/image/BufferedImage;)V+97
 j  net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor.extract(Ljava/awt/image/BufferedImage;)V+12
 j  net.semanticmetadata.lire.builders.AbstractLocalDocumentBuilder.extractLocalFeatures(Ljava/awt/image/BufferedImage;Lnet/semanticmetadata/lire/imageanalysis/features/LocalFeatureExtractor;)Lnet/semanticmetadata/lire/imageanalysis/features/LocalFeatureExtractor;+45
@@ -131,7 +131,7 @@ j  org.opencv.core.Mat.n_rows(J)I+0
 j  org.opencv.core.Mat.rows()I+4
 j  org.opencv.core.Mat.toString()Ljava/lang/String;+13
 v  ~StubRoutines::call_stub
-j  net.semanticmetadata.lire.sampleapp.hsvHistogramExtractor_gloabl.extract(Ljava/awt/image/BufferedImage;)V+234
+j  net.semanticmetadata.lire.sampleapp.ColorHistogramExtractor_gloabl.extract(Ljava/awt/image/BufferedImage;)V+234
 j  net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor.useCVSURF(Ljava/awt/image/BufferedImage;)V+97
 j  net.semanticmetadata.lire.imageanalysis.features.local.simple.SimpleExtractor.extract(Ljava/awt/image/BufferedImage;)V+12
 j  net.semanticmetadata.lire.builders.AbstractLocalDocumentBuilder.extractLocalFeatures(Ljava/awt/image/BufferedImage;Lnet/semanticmetadata/lire/imageanalysis/features/LocalFeatureExtractor;)Lnet/semanticmetadata/lire/imageanalysis/features/LocalFeatureExtractor;+45

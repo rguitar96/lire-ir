@@ -9,5 +9,5 @@
 <entry key="0">info</entry>
 <entry key="1.detector">detCVSURF</entry>
 <entry key="1.codebook.1">SIMPLEdetCVSURFColorHistogramExtactor128</entry>
-<entry key="1.extractor">net.semanticmetadata.lire.sampleapp.hsvHistogramExtractor_gloabl</entry>
+<entry key="1.extractor">net.semanticmetadata.lire.sampleapp.ColorHistogramExtractor_gloabl</entry>
 </properties>
