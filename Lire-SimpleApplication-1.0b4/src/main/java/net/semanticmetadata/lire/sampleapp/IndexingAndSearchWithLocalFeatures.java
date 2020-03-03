@@ -105,6 +105,7 @@ public class IndexingAndSearchWithLocalFeatures {
 
         // Initialize sum of scores
         double scoreSum = 0.0;
+        int index = 1;
 
         ArrayList<String> allImageNames = new ArrayList<>();
         for (File image: dirFiles) {
@@ -136,6 +137,10 @@ public class IndexingAndSearchWithLocalFeatures {
             pWriter.close();
 
             //let the user know its finished with a smile!
+            System.out.println(String.format("Intermediate score %d", index));
+            System.out.println(scoreSum * 10.0 / index);
+
+            index ++;
             System.out.println("Finished everything :)");
         }
 
