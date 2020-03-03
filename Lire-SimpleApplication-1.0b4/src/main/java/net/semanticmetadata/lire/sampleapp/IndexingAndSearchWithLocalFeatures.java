@@ -39,6 +39,7 @@
  */
 package net.semanticmetadata.lire.sampleapp;
 
+import javafx.util.Pair;
 import net.semanticmetadata.lire.aggregators.AbstractAggregator;
 import net.semanticmetadata.lire.aggregators.BOVW;
 import net.semanticmetadata.lire.builders.DocumentBuilder;
@@ -63,12 +64,14 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
+import java.util.regex.Pattern;
 
 /**
  * Simple class showing the process of indexing and searching for local & SIMPLE descriptors.
  * Note that you have to run it with giving the OpenCV library path, eg. "-Djava.library.path="lib\opencv"
+ *
  * @author Mathias Lux, mathias@juggle.at
  */
 public class IndexingAndSearchWithLocalFeatures {
@@ -90,16 +93,24 @@ public class IndexingAndSearchWithLocalFeatures {
 
         File dir = new File(searchImagePath);
 
-        if(!dir.exists()){
+        if (!dir.exists()) {
             dir.mkdir();
-        }
-        else{
+        } else {
             //remove old search results
             FileUtils.cleanDirectory(new File(searchImagePath));
         }
 
         //get list of files being used
         File[] dirFiles = new File(testImagePath).listFiles();
+
+        // Initialize sum of scores
+        double scoreSum = 0.0;
+
+        ArrayList<String> allImageNames = new ArrayList<>();
+        for (File image: dirFiles) {
+            String imageName = image.getName().split("[0-9].jpg")[0];
+            allImageNames.add(imageName);
+        }
 
         //for each file being used in test
         for (File searchImg : dirFiles) {
@@ -110,25 +121,33 @@ public class IndexingAndSearchWithLocalFeatures {
             // indexing all images in "testdata"
             index("index", testImagePath);
             // searching through the images.
-            String results = search("index", searchImagePath);
+            Pair<String, Double> results = search("index", searchImagePath, allImageNames);
+
+            scoreSum += results.getValue();
 
             //rest image files to the original folder
             resetImageFiles();
 
             //write search results to file
-            PrintWriter pWriter = new PrintWriter( searchResultsPath+ searchImg.getName() + "_" +
+            PrintWriter pWriter = new PrintWriter(searchResultsPath + searchImg.getName() + "_" +
                     dateFormatter.format(new Date()) + ".txt",
                     "UTF-8");
-            pWriter.println(results);
+            pWriter.println(results.getKey());
             pWriter.close();
 
             //let the user know its finished with a smile!
             System.out.println("Finished everything :)");
         }
+
+        System.out.println("Final score");
+        System.out.println(scoreSum);
+        System.out.println(String.format("Normalized with %d images", allImageNames.size()));
+        System.out.println(scoreSum * 10.0 / allImageNames.size());
     }
 
     /**
      * sets up images for processing by selecting one test image at random tom be used as the search image (not included in indexing)
+     *
      * @return
      * @throws IOException
      */
@@ -148,15 +167,16 @@ public class IndexingAndSearchWithLocalFeatures {
 
     /**
      * returns the image being used for searching to the test image folder
+     *
      * @throws IOException
      */
-    private static void resetImageFiles() throws IOException{
+    private static void resetImageFiles() throws IOException {
 
         //get the list of files in the search image folder
         File[] dirFiles = new File("data/searchImages").listFiles();
 
         //for each file in the folder move back to the test image folder and remove from the search image folder
-        for(File f : dirFiles){
+        for (File f : dirFiles) {
             copyFile(f, "data/testImages");
             Files.delete(f.toPath());
         }
@@ -164,11 +184,12 @@ public class IndexingAndSearchWithLocalFeatures {
 
     /**
      * copy a file to a new folder
+     *
      * @param fileToMove the file to be moved
      * @param destFolder the folder path for the folder to be moved
      * @throws IOException
      */
-    private static void copyFile(File fileToMove, String destFolder) throws IOException{
+    private static void copyFile(File fileToMove, String destFolder) throws IOException {
         //create a new File object to copy the file to
         File destFile = new File(destFolder, fileToMove.getName());
         //copy the file
@@ -177,10 +198,13 @@ public class IndexingAndSearchWithLocalFeatures {
 
     /**
      * Linear search on the indexed data.
+     *
      * @param indexPath
+     * @param allImages
      * @throws IOException
+     * @return
      */
-    public static String search(String indexPath, String searchImageFolder) throws IOException {
+    public static Pair<String, Double> search(String indexPath, String searchImageFolder, ArrayList<String> allImages) throws IOException {
 
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -188,7 +212,7 @@ public class IndexingAndSearchWithLocalFeatures {
 
         // make sure that this matches what you used for indexing (see below) ...
         ImageSearcher imgSearcher = new GenericFastImageSearcher(10,
-               // hsvHistogramExtractor_gloabl.class,
+                // hsvHistogramExtractor_gloabl.class,
                 ColorHistogramExtractor_gloabl.class,
                 SimpleExtractor.KeypointDetector.CVSURF,
                 new BOVW(),
@@ -198,35 +222,47 @@ public class IndexingAndSearchWithLocalFeatures {
         File[] dirFiles = new File(searchImageFolder).listFiles();
 
         System.out.println("Performing search....");
+        int numberOfSameSpeciesTotal = 0;
+        int numberOfSameSpeciesFound = 0;
 
-        if(dirFiles.length != 0)
-        {
-            for(File searchIm : dirFiles)
-            {
+        // Get hits for search image and calculate score
+        if (dirFiles.length != 0) {
+            for (File searchIm : dirFiles) {
                 ImageSearchHits hits = imgSearcher.search(ImageIO.read(searchIm), reader);
 
-                for (int i=0; i<hits.length(); i++) {
+                String searchImageName = searchIm.getName().split("[0-9].jpg")[0];
+                for (String imageName: allImages) {
+                    if (imageName.equals(searchImageName)) {
+                        numberOfSameSpeciesTotal ++;
+                    }
+                }
 
-                    String res = String.format("%d: %.2f  %s\n", hits.documentID(i),hits.score(i),
-                            reader.document(hits.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0]);
+                for (int i = 0; i < hits.length(); i++) {
+                    String imagePath = reader.document(hits.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
+                    String res = String.format("%d: %.2f  %s\n", hits.documentID(i), hits.score(i), imagePath);
+
+                    String[] imagePathSplitted = imagePath.split(Pattern.quote("\\"));
+                    String imageFullName = imagePathSplitted[imagePathSplitted.length - 1];
+                    String[] imageFullNameSplitted = imageFullName.split("[0-9].jpg");
+                    String imageName = imageFullNameSplitted[0];
+                    if (imageName.equals(searchImageName)) {
+                        numberOfSameSpeciesFound ++;
+                    }
 
                     stringBuilder.append(res);
                 }
-
             }
-        }
-        else
-        {
+        } else {
             System.out.printf("No files found in the search directory %s", searchImageFolder);
         }
 
-        System.out.println("Finished searching");
-
-        return stringBuilder.toString();
+        double searchImageScore = (double) numberOfSameSpeciesFound / (double) numberOfSameSpeciesTotal;
+        return new Pair<>(stringBuilder.toString(), searchImageScore);
     }
 
     /**
      * Indexing data using OpenCV and SURF as well as CEDD and SIMPLE.
+     *
      * @param index
      * @param imageDirectory
      */
@@ -236,7 +272,7 @@ public class IndexingAndSearchWithLocalFeatures {
         // use ParallelIndexer to index all photos from args[0] into "index".
         int numOfDocsForVocabulary = 500;
         Class<? extends AbstractAggregator> aggregator = BOVW.class;
-        int[] numOfClusters = new int[] {128};
+        int[] numOfClusters = new int[]{128};
 
         ParallelIndexer indexer = new ParallelIndexer(DocumentBuilder.NUM_OF_THREADS, index, imageDirectory, numOfClusters, numOfDocsForVocabulary, aggregator);
         indexer.setImagePreprocessor(new ImagePreprocessor() {
